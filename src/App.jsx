@@ -101,9 +101,12 @@ function TarjetaAutorizacion({ a, modo, onMasUna, onCompletar, onAbono }) {
   const vencida = a.fecha_vencimiento && a.fecha_vencimiento < hoy() && !lista
   const p = a.pacientes
 
-  const valorPlan = (abierta ? hechas : total) * a.valor_por_sesion + (a.incluye_primera_vez ? 45000 : 0)
+  const valorPlan = (abierta ? hechas : total) * a.valor_por_sesion
+    + Number(a.valor_entrevista || 0) + Number(a.valor_entrega || 0)
+    + (a.incluye_primera_vez ? 45000 : 0)
   const abonado = (a.pagos || []).reduce((s, x) => s + Number(x.valor), 0)
   const saldo = valorPlan - abonado
+  const entregaPendientePago = modo === 'consultorio' && !abierta && lista && saldo > 0
 
   return (
     <article className="auto-card">
@@ -113,10 +116,11 @@ function TarjetaAutorizacion({ a, modo, onMasUna, onCompletar, onAbono }) {
           <div className="auto-meta">
             {modo === 'sinai'
               ? <>{a.eps?.nombre || 'Sin EPS'} · Aut. {a.numero_autorizacion || '—'}</>
-              : <>Particular · {a.numero_autorizacion || (abierta ? 'Terapia continua' : 'Plan de atención')}</>}
+              : <>Particular · {a.plan_nombre || a.numero_autorizacion || (abierta ? 'Terapia continua' : 'Plan de atención')}</>}
             {a.incluye_primera_vez && ' · incluye 1ª vez'}
           </div>
           {vencida && <div className="vencida">⚠ Autorización vencida el {a.fecha_vencimiento}</div>}
+          {entregaPendientePago && <div className="vencida">⚠ La entrega del informe se agenda al completar el pago</div>}
         </div>
         <div className="fraccion">
           {hechas}{abierta ? <small> sesiones</small> : <small>/{total}</small>}
@@ -307,18 +311,52 @@ function Autorizaciones({ notificar }) {
 }
 
 /* ================= modal NUEVA autorización / plan ================= */
+const PLANTILLAS = [
+  { id: 'eval_inf',  nombre: 'Evaluación Neuropsicológica Infantil',  sesiones: 4,    valor: 105000, entrevista: 125000, entrega: 125000, abierto: false },
+  { id: 'eval_adu',  nombre: 'Evaluación Neuropsicológica Adultos',   sesiones: 3,    valor: 105000, entrevista: 130000, entrega: 125000, abierto: false },
+  { id: 'eval_ci',   nombre: 'Evaluación de Inteligencia (CI)',       sesiones: 1,    valor: 340000, entrevista: 0,      entrega: 0,      abierto: false },
+  { id: 'reh_ses',   nombre: 'Rehabilitación Neuropsicológica · por sesión', sesiones: null, valor: 125000, entrevista: 0, entrega: 0,   abierto: true },
+  { id: 'est_ses',   nombre: 'Estimulación Cognitiva · por sesión',   sesiones: null, valor: 125000, entrevista: 0,      entrega: 0,      abierto: true },
+  { id: 'cons_line', nombre: 'Consulta en línea',                     sesiones: null, valor: 150000, entrevista: 0,      entrega: 0,      abierto: true },
+  { id: 'reh_online',nombre: 'Rehabilitación Online Diaria · mensualidad', sesiones: null, valor: 300000, entrevista: 0, entrega: 0,      abierto: true },
+  { id: 'reh_avanza',nombre: 'Paquete Neuro Avanza (5 sesiones)',     sesiones: 5,    valor: 102000, entrevista: 0,      entrega: 0,      abierto: false },
+  { id: 'reh_crece', nombre: 'Paquete Neuro Crece (10 sesiones)',     sesiones: 10,   valor: 90000,  entrevista: 0,      entrega: 0,      abierto: false },
+  { id: 'custom',    nombre: 'Personalizado…',                        sesiones: 4,    valor: '',     entrevista: 0,      entrega: 0,      abierto: false },
+]
+
 function NuevaAutorizacion({ clinicaDefault, onCerrar, onCreada }) {
   const esSinai = clinicaDefault === 'sinai'
   const [paciente, setPaciente] = useState(null)
   const [epsList, setEpsList] = useState([])
+  const [plantilla, setPlantilla] = useState('')
   const [tipoPlan, setTipoPlan] = useState('paquete') // 'paquete' | 'abierto'
   const [f, setF] = useState({
     eps_id: '', numero_autorizacion: '', sesiones_autorizadas: esSinai ? 10 : 4,
-    valor_por_sesion: esSinai ? 77000 : '', incluye_primera_vez: false, fecha_vencimiento: ''
+    valor_por_sesion: esSinai ? 77000 : '', valor_entrevista: 0, valor_entrega: 0,
+    plan_nombre: '', incluye_primera_vez: false, fecha_vencimiento: ''
   })
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState('')
   const abierto = !esSinai && tipoPlan === 'abierto'
+
+  const aplicarPlantilla = (id) => {
+    setPlantilla(id)
+    const t = PLANTILLAS.find(x => x.id === id)
+    if (!t) return
+    setTipoPlan(t.abierto ? 'abierto' : 'paquete')
+    setF(prev => ({
+      ...prev,
+      plan_nombre: t.id === 'custom' ? '' : t.nombre,
+      sesiones_autorizadas: t.sesiones ?? prev.sesiones_autorizadas,
+      valor_por_sesion: t.valor,
+      valor_entrevista: t.entrevista,
+      valor_entrega: t.entrega
+    }))
+  }
+
+  const totalPlan = abierto ? null
+    : Number(f.sesiones_autorizadas || 0) * Number(f.valor_por_sesion || 0)
+      + Number(f.valor_entrevista || 0) + Number(f.valor_entrega || 0)
 
   useEffect(() => {
     supabase.from('eps').select('id, nombre').eq('activo', true).order('nombre')
@@ -340,9 +378,12 @@ function NuevaAutorizacion({ clinicaDefault, onCerrar, onCreada }) {
       paciente_id: paciente.id,
       clinica_id: clin?.id,
       eps_id: epsId,
-      numero_autorizacion: f.numero_autorizacion || (abierto ? 'Terapia continua' : null),
+      numero_autorizacion: f.numero_autorizacion || null,
+      plan_nombre: f.plan_nombre || (abierto ? 'Terapia continua' : null),
       sesiones_autorizadas: abierto ? null : Number(f.sesiones_autorizadas),
       valor_por_sesion: Number(f.valor_por_sesion),
+      valor_entrevista: Number(f.valor_entrevista || 0),
+      valor_entrega: Number(f.valor_entrega || 0),
       incluye_primera_vez: f.incluye_primera_vez,
       fecha_autorizacion: hoy(),
       fecha_vencimiento: f.fecha_vencimiento || null
@@ -359,6 +400,19 @@ function NuevaAutorizacion({ clinicaDefault, onCerrar, onCreada }) {
         <form onSubmit={guardar}>
           <BuscadorPaciente elegido={paciente} onElegir={setPaciente} />
           {!esSinai && (
+            <label className="field">Plan
+              <select value={plantilla} onChange={e => aplicarPlantilla(e.target.value)} required>
+                <option value="">— Seleccionar plan —</option>
+                {PLANTILLAS.map(t => <option key={t.id} value={t.id}>{t.nombre}</option>)}
+              </select>
+            </label>
+          )}
+          {!esSinai && plantilla === 'reh_online' && (
+            <div className="total-plan">
+              Programa mensual online ($300.000/mes). Cada <b>+1 sesión = 1 mes</b> del programa; registra el abono de la mensualidad al recibirla.
+            </div>
+          )}
+          {!esSinai && plantilla === 'custom' && (
             <div className="segmento" style={{ justifySelf: 'start' }}>
               <button type="button" className={tipoPlan === 'paquete' ? 'activo' : ''} onClick={() => setTipoPlan('paquete')}>Paquete</button>
               <button type="button" className={tipoPlan === 'abierto' ? 'activo' : ''} onClick={() => setTipoPlan('abierto')}>Terapia continua</button>
@@ -400,6 +454,14 @@ function NuevaAutorizacion({ clinicaDefault, onCerrar, onCreada }) {
                 onChange={e => setF({ ...f, fecha_vencimiento: e.target.value })} />
             </label>
           </div>
+          {!esSinai && !abierto && totalPlan > 0 && (
+            <div className="total-plan">
+              {Number(f.valor_entrevista) > 0 && <span>Entrevista {pesos(f.valor_entrevista)} · </span>}
+              {f.sesiones_autorizadas} sesiones × {pesos(f.valor_por_sesion)}
+              {Number(f.valor_entrega) > 0 && <span> · Entrega {pesos(f.valor_entrega)}</span>}
+              <b> = {pesos(totalPlan)}</b>
+            </div>
+          )}
           {esSinai && (
             <label className="check">
               <input type="checkbox" checked={f.incluye_primera_vez}
