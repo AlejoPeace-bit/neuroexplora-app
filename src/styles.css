@@ -293,3 +293,10 @@ main { flex: 1; width: 100%; max-width: 860px; margin: 0 auto; padding: 20px 16p
   margin-top: 8px; font-size: 13px; padding: 8px 10px; max-width: 320px;
   color: var(--pino); font-weight: 600; border-style: dashed;
 }
+
+/* ---------- v1.8: planes con desglose ---------- */
+.total-plan {
+  background: var(--pino-suave); border-radius: 10px; padding: 11px 13px;
+  font-size: 13.5px; color: var(--tinta);
+}
+.total-plan b { color: var(--pino-oscuro); font-size: 15px; }
