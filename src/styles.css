@@ -3,20 +3,21 @@
    Pino profundo + papel cálido + ámbar (cobros)
    ============================================ */
 :root {
-  --pino: #0F6B5C;
-  --pino-oscuro: #0A4A40;
-  --pino-suave: #E3F0ED;
-  --tinta: #22312F;
-  --papel: #FAFAF7;
+  /* Identidad NeuroExplora — Dra. Karen Pérez Pareja */
+  --pino: #B75A79;          /* rosa principal de la marca */
+  --pino-oscuro: #94435E;   /* rosa profundo (títulos) */
+  --pino-suave: #F7E4EA;    /* rosa pálido (fondos suaves) */
+  --tinta: #2A2226;
+  --papel: #FBF4F6;         /* el fondo rosado del flyer */
   --tarjeta: #FFFFFF;
-  --linea: #E4E4DE;
-  --ambar: #C77D2E;
-  --ambar-suave: #FBF1E4;
+  --linea: #EFDCE2;
+  --ambar: #A34467;         /* berry profundo (dinero/cobros) */
+  --ambar-suave: #F8E6EC;
   --rojo: #B4483E;
   --rojo-suave: #F9ECEA;
-  --gris: #6E7B78;
+  --gris: #8C737D;
   --radio: 14px;
-  --sombra: 0 1px 3px rgba(34,49,47,.08), 0 4px 16px rgba(34,49,47,.06);
+  --sombra: 0 1px 3px rgba(148,67,94,.10), 0 4px 16px rgba(148,67,94,.08);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
@@ -31,14 +32,14 @@ body {
 /* ---------- login ---------- */
 .login-wrap {
   min-height: 100dvh; display: grid; place-items: center; padding: 24px;
-  background: linear-gradient(160deg, var(--pino-suave) 0%, var(--papel) 55%);
+  background: linear-gradient(160deg, #F4D9E2 0%, var(--papel) 55%);
 }
 .login-card {
   width: 100%; max-width: 380px; background: var(--tarjeta);
   border: 1px solid var(--linea); border-radius: 20px;
   padding: 36px 28px; box-shadow: var(--sombra);
 }
-.brand { font-family: 'Fraunces', serif; font-weight: 700; font-size: 30px; color: var(--pino-oscuro); letter-spacing: -.5px; }
+.brand { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 30px; color: var(--pino-oscuro); letter-spacing: -.5px; }
 .brand small { display: block; font-family: 'Public Sans'; font-weight: 500; font-size: 13px; color: var(--gris); letter-spacing: .4px; margin-top: 4px; }
 .login-card form { margin-top: 26px; display: grid; gap: 14px; }
 
@@ -100,7 +101,7 @@ main { flex: 1; width: 100%; max-width: 860px; margin: 0 auto; padding: 20px 16p
 }
 
 /* ---------- secciones ---------- */
-.titulo-seccion { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; color: var(--pino-oscuro); margin: 10px 0 4px; }
+.titulo-seccion { font-family: 'Poppins', sans-serif; font-size: 24px; font-weight: 700; color: var(--pino-oscuro); margin: 10px 0 4px; }
 .subtitulo { color: var(--gris); font-size: 14px; margin-bottom: 18px; }
 .pila { display: grid; gap: 12px; }
 
@@ -113,7 +114,7 @@ main { flex: 1; width: 100%; max-width: 860px; margin: 0 auto; padding: 20px 16p
 .auto-nombre { font-weight: 700; font-size: 16px; }
 .auto-meta { font-size: 12.5px; color: var(--gris); margin-top: 2px; }
 .fraccion {
-  font-family: 'Fraunces', serif; font-weight: 700; font-size: 26px; color: var(--pino);
+  font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 26px; color: var(--pino);
   white-space: nowrap; line-height: 1;
 }
 .fraccion small { font-size: 14px; color: var(--gris); font-weight: 500; }
@@ -146,13 +147,13 @@ main { flex: 1; width: 100%; max-width: 860px; margin: 0 auto; padding: 20px 16p
   background: linear-gradient(135deg, var(--pino) 0%, var(--pino-oscuro) 100%);
   color: #fff; border-radius: var(--radio); padding: 20px; display: grid; gap: 4px;
 }
-.total-banner .cifra { font-family: 'Fraunces', serif; font-size: 34px; font-weight: 700; }
+.total-banner .cifra { font-family: 'Poppins', sans-serif; font-size: 34px; font-weight: 700; }
 .total-banner .detalle { font-size: 13px; opacity: .85; }
 .cobrar-item {
   background: var(--tarjeta); border: 1px solid var(--linea); border-radius: var(--radio);
   padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
 }
-.cobrar-item .monto { font-family: 'Fraunces', serif; font-weight: 700; font-size: 18px; color: var(--ambar); }
+.cobrar-item .monto { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 18px; color: var(--ambar); }
 
 /* ---------- pacientes ---------- */
 .buscador { position: relative; margin-bottom: 14px; }
@@ -183,7 +184,7 @@ main { flex: 1; width: 100%; max-width: 860px; margin: 0 auto; padding: 20px 16p
   overflow-y: auto; border-radius: 20px 20px 0 0; padding: 24px 20px 32px;
 }
 @media (min-width: 720px) { .modal { border-radius: 20px; } }
-.modal h2 { font-family: 'Fraunces', serif; font-size: 20px; color: var(--pino-oscuro); margin-bottom: 16px; }
+.modal h2 { font-family: 'Poppins', sans-serif; font-size: 20px; color: var(--pino-oscuro); margin-bottom: 16px; }
 .modal form { display: grid; gap: 13px; }
 .fila-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .modal-acciones { display: flex; gap: 10px; margin-top: 6px; }
@@ -252,7 +253,7 @@ main { flex: 1; width: 100%; max-width: 860px; margin: 0 auto; padding: 20px 16p
   background: var(--pino-suave); border-radius: 12px; padding: 12px 8px;
   display: grid; justify-items: center; gap: 2px;
 }
-.resumen-ficha b { font-family: 'Fraunces', serif; font-size: 22px; color: var(--pino-oscuro); }
+.resumen-ficha b { font-family: 'Poppins', sans-serif; font-size: 22px; color: var(--pino-oscuro); }
 .resumen-ficha span { font-size: 11.5px; color: var(--gris); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
 .ficha-titulo { font-size: 14px; font-weight: 700; color: var(--pino-oscuro); margin: 16px 0 8px; }
 .ficha-item {
