@@ -1,0 +1,17 @@
+{
+  "name": "NeuroExplora",
+  "short_name": "NeuroExplora",
+  "description": "Gestión del consultorio - Dra. Karen Pérez Pareja",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAF7",
+  "theme_color": "#0F6B5C",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

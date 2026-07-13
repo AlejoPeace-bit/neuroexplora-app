@@ -1,0 +1,294 @@
+/* ============================================
+   NeuroExplora — sistema de diseño
+   Pino profundo + papel cálido + ámbar (cobros)
+   ============================================ */
+:root {
+  --pino: #0F6B5C;
+  --pino-oscuro: #0A4A40;
+  --pino-suave: #E3F0ED;
+  --tinta: #22312F;
+  --papel: #FAFAF7;
+  --tarjeta: #FFFFFF;
+  --linea: #E4E4DE;
+  --ambar: #C77D2E;
+  --ambar-suave: #FBF1E4;
+  --rojo: #B4483E;
+  --rojo-suave: #F9ECEA;
+  --gris: #6E7B78;
+  --radio: 14px;
+  --sombra: 0 1px 3px rgba(34,49,47,.08), 0 4px 16px rgba(34,49,47,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'Public Sans', system-ui, sans-serif;
+  background: var(--papel);
+  color: var(--tinta);
+  -webkit-font-smoothing: antialiased;
+}
+#root { min-height: 100dvh; display: flex; flex-direction: column; }
+
+/* ---------- login ---------- */
+.login-wrap {
+  min-height: 100dvh; display: grid; place-items: center; padding: 24px;
+  background: linear-gradient(160deg, var(--pino-suave) 0%, var(--papel) 55%);
+}
+.login-card {
+  width: 100%; max-width: 380px; background: var(--tarjeta);
+  border: 1px solid var(--linea); border-radius: 20px;
+  padding: 36px 28px; box-shadow: var(--sombra);
+}
+.brand { font-family: 'Fraunces', serif; font-weight: 700; font-size: 30px; color: var(--pino-oscuro); letter-spacing: -.5px; }
+.brand small { display: block; font-family: 'Public Sans'; font-weight: 500; font-size: 13px; color: var(--gris); letter-spacing: .4px; margin-top: 4px; }
+.login-card form { margin-top: 26px; display: grid; gap: 14px; }
+
+/* ---------- inputs ---------- */
+label.field { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: var(--tinta); }
+input, select, textarea {
+  font: inherit; padding: 11px 13px; border: 1.5px solid var(--linea);
+  border-radius: 10px; background: #fff; color: var(--tinta); width: 100%;
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+  outline: 3px solid rgba(15,107,92,.35); outline-offset: 1px; border-color: var(--pino);
+}
+.check { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; }
+.check input { width: 18px; height: 18px; accent-color: var(--pino); }
+
+/* ---------- botones ---------- */
+button { font: inherit; cursor: pointer; border: none; border-radius: 10px; }
+.btn-primario {
+  background: var(--pino); color: #fff; font-weight: 600; padding: 12px 18px;
+  transition: background .15s;
+}
+.btn-primario:hover { background: var(--pino-oscuro); }
+.btn-primario:disabled { background: var(--gris); cursor: wait; }
+.btn-fantasma {
+  background: transparent; color: var(--pino); font-weight: 600; padding: 12px 18px;
+  border: 1.5px solid var(--pino);
+}
+.btn-peligro-suave { background: var(--rojo-suave); color: var(--rojo); font-weight: 600; padding: 9px 14px; }
+
+/* ---------- app shell ---------- */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; background: var(--tarjeta); border-bottom: 1px solid var(--linea);
+  position: sticky; top: 0; z-index: 10;
+}
+.topbar .brand { font-size: 20px; }
+.topbar .brand small { display: none; }
+.salir { background: none; color: var(--gris); font-size: 13px; font-weight: 600; padding: 8px; }
+main { flex: 1; width: 100%; max-width: 860px; margin: 0 auto; padding: 20px 16px 110px; }
+
+/* ---------- tabs ---------- */
+.tabs {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  background: var(--tarjeta); border-top: 1px solid var(--linea);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tab {
+  background: none; padding: 10px 4px 12px; display: grid; gap: 3px; justify-items: center;
+  font-size: 11px; font-weight: 600; color: var(--gris); border-radius: 0;
+}
+.tab.activa { color: var(--pino); }
+.tab svg { width: 22px; height: 22px; }
+@media (min-width: 720px) {
+  .tabs { position: sticky; top: 57px; bottom: auto; grid-template-columns: repeat(5, max-content); gap: 6px; padding: 10px 20px; }
+  .tab { flex-direction: row; display: flex; gap: 8px; font-size: 14px; padding: 9px 16px; border-radius: 999px; }
+  .tab.activa { background: var(--pino-suave); }
+  main { padding-bottom: 40px; }
+}
+
+/* ---------- secciones ---------- */
+.titulo-seccion { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; color: var(--pino-oscuro); margin: 10px 0 4px; }
+.subtitulo { color: var(--gris); font-size: 14px; margin-bottom: 18px; }
+.pila { display: grid; gap: 12px; }
+
+/* ---------- tarjeta de autorización (elemento firma) ---------- */
+.auto-card {
+  background: var(--tarjeta); border: 1px solid var(--linea); border-radius: var(--radio);
+  padding: 16px; box-shadow: var(--sombra); display: grid; gap: 12px;
+}
+.auto-card header { display: flex; justify-content: space-between; align-items: start; gap: 10px; }
+.auto-nombre { font-weight: 700; font-size: 16px; }
+.auto-meta { font-size: 12.5px; color: var(--gris); margin-top: 2px; }
+.fraccion {
+  font-family: 'Fraunces', serif; font-weight: 700; font-size: 26px; color: var(--pino);
+  white-space: nowrap; line-height: 1;
+}
+.fraccion small { font-size: 14px; color: var(--gris); font-weight: 500; }
+.puntos { display: flex; flex-wrap: wrap; gap: 7px; }
+.punto {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--pino); background: transparent; transition: background .2s;
+}
+.punto.lleno { background: var(--pino); }
+.punto.extra { border-color: var(--ambar); background: var(--ambar); }
+.barra { height: 10px; background: var(--pino-suave); border-radius: 999px; overflow: hidden; }
+.barra > div { height: 100%; background: var(--pino); border-radius: 999px; transition: width .25s; }
+.auto-pie { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.auto-valor { font-size: 13px; color: var(--gris); }
+.auto-valor b { color: var(--tinta); }
+.btn-mas1 {
+  background: var(--pino); color: #fff; font-weight: 700; font-size: 15px;
+  padding: 11px 20px; border-radius: 999px; box-shadow: 0 2px 8px rgba(15,107,92,.35);
+}
+.btn-mas1:disabled { background: var(--gris); box-shadow: none; }
+.chip-listo {
+  background: var(--ambar-suave); color: var(--ambar); font-weight: 700; font-size: 12.5px;
+  padding: 6px 12px; border-radius: 999px; white-space: nowrap;
+}
+.chip-progreso { background: var(--pino-suave); color: var(--pino); font-weight: 600; font-size: 12.5px; padding: 6px 12px; border-radius: 999px; }
+.vencida { color: var(--rojo); font-weight: 600; font-size: 12.5px; }
+
+/* ---------- para cobrar ---------- */
+.total-banner {
+  background: linear-gradient(135deg, var(--pino) 0%, var(--pino-oscuro) 100%);
+  color: #fff; border-radius: var(--radio); padding: 20px; display: grid; gap: 4px;
+}
+.total-banner .cifra { font-family: 'Fraunces', serif; font-size: 34px; font-weight: 700; }
+.total-banner .detalle { font-size: 13px; opacity: .85; }
+.cobrar-item {
+  background: var(--tarjeta); border: 1px solid var(--linea); border-radius: var(--radio);
+  padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+}
+.cobrar-item .monto { font-family: 'Fraunces', serif; font-weight: 700; font-size: 18px; color: var(--ambar); }
+
+/* ---------- pacientes ---------- */
+.buscador { position: relative; margin-bottom: 14px; }
+.buscador input { padding-left: 40px; }
+.buscador svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--gris); }
+.pac-item {
+  background: var(--tarjeta); border: 1px solid var(--linea); border-radius: 12px;
+  padding: 13px 16px; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+}
+.pac-item .doc { font-size: 12.5px; color: var(--gris); }
+.chip-eps { background: var(--pino-suave); color: var(--pino); font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
+
+/* ---------- formularios / modal ---------- */
+.fab {
+  position: fixed; right: 18px; bottom: 84px; z-index: 25;
+  width: 58px; height: 58px; border-radius: 50%; background: var(--ambar);
+  color: #fff; font-size: 30px; line-height: 1; box-shadow: 0 4px 16px rgba(199,125,46,.45);
+  display: grid; place-items: center;
+}
+@media (min-width: 720px) { .fab { bottom: 28px; right: 28px; } }
+.modal-fondo {
+  position: fixed; inset: 0; background: rgba(34,49,47,.45); z-index: 40;
+  display: grid; place-items: end center; 
+}
+@media (min-width: 720px) { .modal-fondo { place-items: center; } }
+.modal {
+  background: var(--tarjeta); width: 100%; max-width: 480px; max-height: 92dvh;
+  overflow-y: auto; border-radius: 20px 20px 0 0; padding: 24px 20px 32px;
+}
+@media (min-width: 720px) { .modal { border-radius: 20px; } }
+.modal h2 { font-family: 'Fraunces', serif; font-size: 20px; color: var(--pino-oscuro); margin-bottom: 16px; }
+.modal form { display: grid; gap: 13px; }
+.fila-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modal-acciones { display: flex; gap: 10px; margin-top: 6px; }
+.modal-acciones button { flex: 1; }
+
+/* ---------- autocomplete paciente ---------- */
+.sugerencias { border: 1.5px solid var(--linea); border-radius: 10px; overflow: hidden; margin-top: -6px; }
+.sugerencias button {
+  display: block; width: 100%; text-align: left; background: #fff; padding: 11px 13px;
+  border-bottom: 1px solid var(--linea); font-size: 14px; border-radius: 0;
+}
+.sugerencias button:hover { background: var(--pino-suave); }
+.pac-elegido {
+  background: var(--pino-suave); border-radius: 10px; padding: 11px 13px;
+  display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 14px;
+}
+.pac-elegido button { background: none; color: var(--rojo); font-weight: 700; font-size: 13px; }
+
+/* ---------- avisos ---------- */
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 96px; z-index: 60;
+  background: var(--tinta); color: #fff; padding: 12px 20px; border-radius: 999px;
+  font-size: 14px; font-weight: 600; box-shadow: var(--sombra);
+}
+@media (min-width: 720px) { .toast { bottom: 28px; } }
+.vacio { text-align: center; color: var(--gris); padding: 40px 20px; font-size: 14.5px; }
+.vacio b { display: block; font-size: 16px; color: var(--tinta); margin-bottom: 6px; }
+.error-msg { background: var(--rojo-suave); color: var(--rojo); padding: 11px 14px; border-radius: 10px; font-size: 13.5px; font-weight: 500; }
+.cargando { text-align: center; color: var(--gris); padding: 30px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* ---------- v1.1: consultorio particular ---------- */
+.segmento {
+  display: inline-flex; background: var(--pino-suave); border-radius: 999px;
+  padding: 4px; margin: 6px 0 4px; gap: 2px;
+}
+.segmento button {
+  background: transparent; color: var(--pino); font-weight: 600; font-size: 14px;
+  padding: 8px 18px; border-radius: 999px;
+}
+.segmento button.activo { background: var(--pino); color: #fff; }
+.abono-linea {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  font-size: 13.5px; color: var(--gris); flex-wrap: wrap;
+}
+.abono-linea b { color: var(--tinta); }
+.chip-saldo {
+  background: var(--ambar-suave); color: var(--ambar); font-weight: 700;
+  font-size: 12.5px; padding: 6px 12px; border-radius: 999px; white-space: nowrap;
+}
+.btn-abono {
+  background: var(--ambar); color: #fff; font-weight: 700; font-size: 14px;
+  padding: 11px 16px; border-radius: 999px; box-shadow: 0 2px 8px rgba(199,125,46,.35);
+}
+
+/* ---------- v1.2: ficha del paciente ---------- */
+.pac-click { text-align: left; cursor: pointer; transition: border-color .15s; width: 100%; font: inherit; }
+.pac-click:hover { border-color: var(--pino); }
+.resumen-ficha {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px;
+}
+.resumen-ficha > div {
+  background: var(--pino-suave); border-radius: 12px; padding: 12px 8px;
+  display: grid; justify-items: center; gap: 2px;
+}
+.resumen-ficha b { font-family: 'Fraunces', serif; font-size: 22px; color: var(--pino-oscuro); }
+.resumen-ficha span { font-size: 11.5px; color: var(--gris); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+.ficha-titulo { font-size: 14px; font-weight: 700; color: var(--pino-oscuro); margin: 16px 0 8px; }
+.ficha-item {
+  background: var(--papel); border: 1px solid var(--linea); border-radius: 10px;
+  padding: 10px 13px; font-size: 14px;
+}
+
+/* ---------- v1.4 ---------- */
+.btn-menos {
+  width: 38px; height: 38px; border-radius: 50%; background: transparent;
+  border: 1.5px solid var(--linea); color: var(--gris); font-size: 20px; font-weight: 700;
+}
+.btn-menos:hover { border-color: var(--rojo); color: var(--rojo); }
+.ultima-sesion { font-size: 12px; color: var(--gris); margin-top: 3px; }
+.pagos-lista { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.pago-chip {
+  background: var(--ambar-suave); color: var(--ambar); font-size: 11.5px;
+  font-weight: 600; padding: 4px 9px; border-radius: 999px;
+}
+
+/* ---------- v1.5: ventas ---------- */
+.seccion-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.seccion-header .btn-abono { margin-top: 22px; }
+
+/* ---------- v1.6: pruebas neuropsicológicas ---------- */
+.pruebas-lista { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.prueba-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--pino-suave); color: var(--pino-oscuro); font-size: 12px;
+  font-weight: 700; padding: 4px 9px; border-radius: 999px;
+}
+.prueba-chip button {
+  background: none; color: var(--rojo); font-size: 14px; font-weight: 700;
+  padding: 0 2px; line-height: 1;
+}
+.agregar-prueba {
+  margin-top: 8px; font-size: 13px; padding: 8px 10px; max-width: 320px;
+  color: var(--pino); font-weight: 600; border-style: dashed;
+}
