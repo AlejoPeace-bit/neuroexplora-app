@@ -300,3 +300,6 @@ main { flex: 1; width: 100%; max-width: 860px; margin: 0 auto; padding: 20px 16p
   font-size: 13.5px; color: var(--tinta);
 }
 .total-plan b { color: var(--pino-oscuro); font-size: 15px; }
+
+/* ---------- v2.0: informes pendientes ---------- */
+.fila-informe { border-left: 4px solid var(--ambar); }
