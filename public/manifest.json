@@ -4,8 +4,8 @@
   "description": "Gestión del consultorio - Dra. Karen Pérez Pareja",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FAFAF7",
-  "theme_color": "#0F6B5C",
+  "background_color": "#FBF4F6",
+  "theme_color": "#B75A79",
   "icons": [
     {
       "src": "icon.svg",
