@@ -262,11 +262,19 @@ function Autorizaciones({ notificar }) {
       .eq('id', a.id)
     if (error) { notificar('No se pudo guardar. Intenta de nuevo.'); cargar() }
     else if (delta < 0) notificar(`Corregido: ${nuevas} sesiones`)
-    else notificar(a.sesiones_autorizadas != null && nuevas >= a.sesiones_autorizadas
-      ? `¡${a.pacientes?.nombres} completó sus sesiones! 🎉`
-      : a.sesiones_autorizadas != null
-        ? `Sesión ${nuevas}/${a.sesiones_autorizadas} registrada`
-        : `Sesión ${nuevas} registrada`)
+    else if (a.sesiones_autorizadas != null && nuevas >= a.sesiones_autorizadas) {
+      // Sesiones completas: si hay proceso vinculado, pasa solo a Pendiente Informe
+      if (a.proceso_id) {
+        await supabase.from('procesos')
+          .update({ estado: 'PENDIENTE_INFORME' }).eq('id', a.proceso_id)
+        notificar(`¡${a.pacientes?.nombres} completó sus sesiones! 📝 Informe pendiente`)
+      } else {
+        notificar(`¡${a.pacientes?.nombres} completó sus sesiones! 🎉`)
+      }
+    }
+    else notificar(a.sesiones_autorizadas != null
+      ? `Sesión ${nuevas}/${a.sesiones_autorizadas} registrada`
+      : `Sesión ${nuevas} registrada`)
   }
 
   const completar = async (a) => {
@@ -374,8 +382,20 @@ function NuevaAutorizacion({ clinicaDefault, onCerrar, onCreada }) {
       const { data: part } = await supabase.from('eps').select('id').eq('nombre', 'Particular').single()
       epsId = part?.id || null
     }
+    // Si es una evaluación del consultorio, crear el proceso vinculado
+    // (aparece en el Kanban y permite el seguimiento del informe)
+    let procesoId = null
+    const esEvaluacion = !esSinai && ['eval_inf', 'eval_adu', 'eval_ci'].includes(plantilla)
+    if (esEvaluacion) {
+      const { data: proc } = await supabase.from('procesos').insert({
+        paciente_id: paciente.id, tipo: 'evaluacion',
+        estado: 'EN_EVALUACION', fecha_inicio: hoy()
+      }).select().single()
+      procesoId = proc?.id || null
+    }
     const { error: err } = await supabase.from('autorizaciones').insert({
       paciente_id: paciente.id,
+      proceso_id: procesoId,
       clinica_id: clin?.id,
       eps_id: epsId,
       numero_autorizacion: f.numero_autorizacion || null,
@@ -986,28 +1006,41 @@ function Procesos({ notificar }) {
     else notificar('Estado actualizado ✓')
   }
 
+  const ESTADOS_INFORME = ['PENDIENTE_INFORME', 'INFORME_EN_ELABORACION', 'EN_REVISION']
+  const enInforme = (lista || []).filter(p => ESTADOS_INFORME.includes(p.estado))
+  const resto = (lista || []).filter(p => !ESTADOS_INFORME.includes(p.estado))
+
+  const FilaProceso = ({ p, destacada }) => (
+    <div className={'pac-item' + (destacada ? ' fila-informe' : '')} style={{ flexWrap: 'wrap' }}>
+      <div style={{ minWidth: 160 }}>
+        <b>{p.pacientes?.nombres} {p.pacientes?.apellidos}</b>
+        <div className="doc">{p.tipo} · desde {p.fecha_inicio}</div>
+      </div>
+      <select value={p.estado} onChange={e => cambiarEstado(p, e.target.value)} style={{ maxWidth: 230 }}>
+        {estados.map(e2 => <option key={e2.codigo} value={e2.codigo}>{e2.nombre}</option>)}
+      </select>
+    </div>
+  )
+
   return (
     <>
-      <h1 className="titulo-seccion">Procesos activos</h1>
+      <h1 className="titulo-seccion">Procesos</h1>
       <p className="subtitulo">Cambia el estado y se refleja en el tablero Kanban</p>
-      {lista === null ? <div className="cargando">Cargando…</div> :
-        lista.length === 0 ? (
-          <div className="vacio"><b>Sin procesos activos</b>Al registrar un paciente con proceso, aparecerá aquí.</div>
-        ) : (
-          <div className="pila">
-            {lista.map(p => (
-              <div className="pac-item" key={p.id} style={{ flexWrap: 'wrap' }}>
-                <div style={{ minWidth: 160 }}>
-                  <b>{p.pacientes?.nombres} {p.pacientes?.apellidos}</b>
-                  <div className="doc">{p.tipo} · desde {p.fecha_inicio}</div>
-                </div>
-                <select value={p.estado} onChange={e => cambiarEstado(p, e.target.value)} style={{ maxWidth: 230 }}>
-                  {estados.map(e2 => <option key={e2.codigo} value={e2.codigo}>{e2.nombre}</option>)}
-                </select>
-              </div>
-            ))}
+      {lista === null ? <div className="cargando">Cargando…</div> : (
+        <>
+          <div className="seccion-header">
+            <h2 className="ficha-titulo" style={{ fontSize: 16, margin: '4px 0 8px' }}>📝 Informes pendientes {enInforme.length > 0 && `(${enInforme.length})`}</h2>
           </div>
-        )}
+          {enInforme.length === 0
+            ? <div className="vacio" style={{ padding: '16px' }}>Ningún informe pendiente. 🎉</div>
+            : <div className="pila">{enInforme.map(p => <FilaProceso key={p.id} p={p} destacada />)}</div>}
+
+          <h2 className="ficha-titulo" style={{ fontSize: 16, margin: '22px 0 8px' }}>Otros procesos activos</h2>
+          {resto.length === 0
+            ? <div className="vacio" style={{ padding: '16px' }}>Sin otros procesos activos.</div>
+            : <div className="pila">{resto.map(p => <FilaProceso key={p.id} p={p} />)}</div>}
+        </>
+      )}
     </>
   )
 }
