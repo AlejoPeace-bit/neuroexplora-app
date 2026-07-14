@@ -101,9 +101,12 @@ function TarjetaAutorizacion({ a, modo, onMasUna, onCompletar, onAbono }) {
   const vencida = a.fecha_vencimiento && a.fecha_vencimiento < hoy() && !lista
   const p = a.pacientes
 
-  const valorPlan = (abierta ? hechas : total) * a.valor_por_sesion
+  // Si incluye primera vez: la 1ª sesión vale $45.000 y las demás el valor normal
+  const calcSesiones = (n) => a.incluye_primera_vez
+    ? (n > 0 ? 45000 + (n - 1) * a.valor_por_sesion : 0)
+    : n * a.valor_por_sesion
+  const valorPlan = calcSesiones(abierta ? hechas : total)
     + Number(a.valor_entrevista || 0) + Number(a.valor_entrega || 0)
-    + (a.incluye_primera_vez ? 45000 : 0)
   const abonado = (a.pagos || []).reduce((s, x) => s + Number(x.valor), 0)
   const saldo = valorPlan - abonado
   const entregaPendientePago = modo === 'consultorio' && !abierta && lista && saldo > 0
@@ -115,7 +118,7 @@ function TarjetaAutorizacion({ a, modo, onMasUna, onCompletar, onAbono }) {
           <div className="auto-nombre">{p?.nombres} {p?.apellidos}</div>
           <div className="auto-meta">
             {modo === 'sinai'
-              ? <>{a.eps?.nombre || 'Sin EPS'} · Aut. {a.numero_autorizacion || '—'}</>
+              ? <>{a.eps?.nombre || 'Sin EPS'}</>
               : <>Particular · {a.plan_nombre || a.numero_autorizacion || (abierta ? 'Terapia continua' : 'Plan de atención')}</>}
             {a.incluye_primera_vez && ' · incluye 1ª vez'}
           </div>
@@ -152,7 +155,7 @@ function TarjetaAutorizacion({ a, modo, onMasUna, onCompletar, onAbono }) {
       <div className="auto-pie">
         <div className="auto-valor">
           {modo === 'sinai'
-            ? <>{pesos(a.valor_por_sesion)}/sesión · acumulado <b>{pesos(hechas * a.valor_por_sesion + (a.incluye_primera_vez ? 45000 : 0))}</b></>
+            ? <>{pesos(a.valor_por_sesion)}/sesión · acumulado <b>{pesos(calcSesiones(hechas))}</b></>
             : <>{pesos(a.valor_por_sesion)}/sesión</>}
           {hechas > 0 && a.actualizado_en && (
             <div className="ultima-sesion">Última: {new Date(a.actualizado_en).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}</div>
@@ -446,47 +449,89 @@ function NuevaAutorizacion({ clinicaDefault, onCerrar, onCreada }) {
               </select>
             </label>
           )}
-          <div className="fila-2">
-            <label className="field">{esSinai ? 'N° autorización' : 'Concepto'}
-              <input value={f.numero_autorizacion}
-                placeholder={esSinai ? '' : (abierto ? 'Ej: Terapia semanal' : 'Ej: Evaluación completa')}
-                onChange={e => setF({ ...f, numero_autorizacion: e.target.value })} />
-            </label>
-            {!abierto ? (
-              <label className="field">{esSinai ? 'Sesiones autorizadas' : 'N° de sesiones'}
-                <input type="number" min="1" max="60" value={f.sesiones_autorizadas}
-                  onChange={e => setF({ ...f, sesiones_autorizadas: e.target.value })} required />
-              </label>
-            ) : (
-              <label className="field">Sesiones
-                <input value="Sin límite" disabled />
-              </label>
-            )}
-          </div>
-          <div className="fila-2">
-            <label className="field">Valor por sesión
-              <input type="number" step="1000" value={f.valor_por_sesion}
-                placeholder={esSinai ? '' : 'Tarifa particular'}
-                onChange={e => setF({ ...f, valor_por_sesion: e.target.value })} required />
-            </label>
-            <label className="field">Vence
-              <input type="date" value={f.fecha_vencimiento}
-                onChange={e => setF({ ...f, fecha_vencimiento: e.target.value })} />
-            </label>
-          </div>
-          {!esSinai && !abierto && totalPlan > 0 && (
-            <div className="total-plan">
-              {Number(f.valor_entrevista) > 0 && <span>Entrevista {pesos(f.valor_entrevista)} · </span>}
-              {f.sesiones_autorizadas} sesiones × {pesos(f.valor_por_sesion)}
-              {Number(f.valor_entrega) > 0 && <span> · Entrega {pesos(f.valor_entrega)}</span>}
-              <b> = {pesos(totalPlan)}</b>
-            </div>
-          )}
+          {(() => {
+            const esCustom = plantilla === 'custom'
+            const planDefinido = !esSinai && plantilla && !esCustom
+            return (
+              <>
+                <div className="fila-2">
+                  {!esSinai && (
+                    <label className="field">Concepto (opcional)
+                      <input value={f.numero_autorizacion}
+                        placeholder={abierto ? 'Ej: Terapia semanal' : 'Ej: Remitido por neurología'}
+                        onChange={e => setF({ ...f, numero_autorizacion: e.target.value })} />
+                    </label>
+                  )}
+                  {esSinai && (
+                    <label className="field">Sesiones autorizadas
+                      <input type="number" min="1" max="60" value={f.sesiones_autorizadas}
+                        onChange={e => setF({ ...f, sesiones_autorizadas: e.target.value })} required />
+                    </label>
+                  )}
+                  <label className="field">Vence
+                    <input type="date" value={f.fecha_vencimiento}
+                      onChange={e => setF({ ...f, fecha_vencimiento: e.target.value })} />
+                  </label>
+                </div>
+                {esSinai && (
+                  <label className="field">Valor por sesión
+                    <input type="number" step="1000" value={f.valor_por_sesion}
+                      onChange={e => setF({ ...f, valor_por_sesion: e.target.value })} required />
+                  </label>
+                )}
+                {esCustom && (
+                  <>
+                    <div className="fila-2">
+                      {!abierto && (
+                        <label className="field">N° de sesiones
+                          <input type="number" min="1" max="60" value={f.sesiones_autorizadas}
+                            onChange={e => setF({ ...f, sesiones_autorizadas: e.target.value })} required />
+                        </label>
+                      )}
+                      <label className="field">Valor por sesión
+                        <input type="number" step="1000" value={f.valor_por_sesion}
+                          placeholder="Tarifa particular"
+                          onChange={e => setF({ ...f, valor_por_sesion: e.target.value })} required />
+                      </label>
+                    </div>
+                    {!abierto && (
+                      <div className="fila-2">
+                        <label className="field">Entrevista inicial ($)
+                          <input type="number" step="1000" value={f.valor_entrevista}
+                            onChange={e => setF({ ...f, valor_entrevista: e.target.value })} />
+                        </label>
+                        <label className="field">Entrega de informe ($)
+                          <input type="number" step="1000" value={f.valor_entrega}
+                            onChange={e => setF({ ...f, valor_entrega: e.target.value })} />
+                        </label>
+                      </div>
+                    )}
+                  </>
+                )}
+                {planDefinido && !abierto && totalPlan > 0 && (
+                  <div className="total-plan">
+                    {Number(f.valor_entrevista) > 0 && <span>Entrevista {pesos(f.valor_entrevista)} · </span>}
+                    {f.sesiones_autorizadas} sesiones de evaluación × {pesos(f.valor_por_sesion)}
+                    {Number(f.valor_entrega) > 0 && <span> · Entrega de informe {pesos(f.valor_entrega)}</span>}
+                    <b> = {pesos(totalPlan)}</b>
+                  </div>
+                )}
+                {planDefinido && abierto && plantilla !== 'reh_online' && (
+                  <div className="total-plan">
+                    <b>{pesos(f.valor_por_sesion)}</b> por sesión · sin límite de sesiones
+                  </div>
+                )}
+                {esCustom && !abierto && totalPlan > 0 && (
+                  <div className="total-plan"><b>Total del plan: {pesos(totalPlan)}</b></div>
+                )}
+              </>
+            )
+          })()}
           {esSinai && (
             <label className="check">
               <input type="checkbox" checked={f.incluye_primera_vez}
                 onChange={e => setF({ ...f, incluye_primera_vez: e.target.checked })} />
-              Incluye consulta de primera vez (+$45.000)
+              La primera sesión es consulta de primera vez ($45.000)
             </label>
           )}
           {error && <div className="error-msg">{error}</div>}
